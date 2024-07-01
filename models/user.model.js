@@ -1,3 +1,4 @@
+import mongoose from "mongoose";
 import { Schema, model } from "mongoose";
 
 const userSchema = new Schema({
@@ -27,8 +28,13 @@ const userSchema = new Schema({
     type: Boolean,
     default: false,
   },
+  isActive: {
+    type: Boolean ,
+    default: true
+  }
   
 },
-{timestamps: true});
+{timestamps: true}); 
+//les documents de type user auront automatiquement les champs createdAt et updatedAt qui seront renseignés avec les horodatages correspondants
 
 export const userModel = mongoose.model("user", userSchema);
