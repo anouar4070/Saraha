@@ -1,40 +1,59 @@
+import bcrypt from "bcrypt";
+import jwt from "jsonwebtoken";
+import { userModel } from "../../../models/user.model.js";
+import { sendEmail } from "../../../emails/nodemailer.js";
 
-import bcrypt from "bcrypt"
-import jwt from "jsonwebtoken"
-import {userModel} from "../../../models/user.model.js"
+const signUp = async (req, res) => {
+  const { name, email, password, age } = req.body;
 
-const signUp = async(req, res) => {
+  const user = await userModel.findOne({ email });
+  if (user)
+    return res.json({
+      message: "email already exists",
+    });
 
-  const {  name, email, password, age} = req.body;
+  let hash = bcrypt.hashSync(password, 8);
+  userModel.insertMany({ name, email, password: hash, age });
 
-const user = await userModel.findOne({ email});
-if(user) {
-  return res.json({ 
-    message: "user already exists"
+  sendEmail({ email });
+  res.json({ message: "User created successfully" });
+};
+
+const signIn = async (req, res) => {
+  const { email, password } = req.body;
+  
+  const user = await userModel.findOne({ email });
+  if (user && bcrypt.compareSync(password, user.password)) {
+    let TOKEN = jwt.sign(
+      { name: user.name, userId: user._id },
+      process.env.JWT_KEY
+    );
+    return res.json({ message: "login with token", TOKEN });
+  }
+  res.json({ message: "User not found or password is wrong" });
+};
+
+const verify = async (req, res) => {
+  const { TOKEN } = req.params;
+  jwt.verify(TOKEN, process.env.JWT_KEY, async (err, decoded) => {
+    if (err) {
+      return res.json(err);
+    } else {
+      await userModel.findOneAndUpdate(
+        { email: decoded.email },
+        { verified: true }
+      );
+      res.json({ message: "verified" });
+    }
   });
-  } else {
-    const hash = bcrypt.hashSync(password, 8)
-    await userModel.insertMany({  name, email, password:hash, age});
-    res.json({ message: "User created successfully"});
-  }
-
 };
 
+export { signUp, signIn, verify };
 
-const signIn = async(req, res) => {
- const { email, password} = req.body;
-const user = await userModel.findOne({ email});
-if(user && bcrypt.compareSync(password, user.password)) {
-  let TOKEN = jwt.sign({ id: user.id, name:user.name}, 'myNameIsAnouar')
-  res.json({ message: "login with token", TOKEN  });
-  // res.json({ message: "login with token", role:"user" });
-} 
- else {
-   res.json({ message: "User not found or password is wrong"});
-  }
-
-};
-
-
-export { signUp, signIn };
-
+/**
+ * salem anouar
+ */
+function demo() {
+  console.log("hello!");
+}
+demo();

@@ -1,13 +1,14 @@
 import express from 'express';
-import { addMessage, updateMessage, deleteMessage, getAllMessages } from './message.controller.js';
-import  { auth }  from '../../middleware/auth.js';
+import { addMessage, updateMessage, deleteMessage, getUserMessages } from './message.controller.js';
+import { auth } from '../../middleware/auth.js';
+
 
 const messageRouter = express.Router()
 
 messageRouter.post('/',auth, addMessage);
-messageRouter.put('/',auth, updateMessage);
-messageRouter.delete('/',auth, deleteMessage);
-messageRouter.get('/',auth, getAllMessages);
+// messageRouter.put('/', updateMessage);
+// messageRouter.delete('/', deleteMessage);
+messageRouter.get('/',auth, getUserMessages);
 
 
 export default messageRouter;
